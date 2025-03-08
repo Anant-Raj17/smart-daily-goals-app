@@ -1,22 +1,103 @@
-You are an expert in TypeScript, Next.js App Router, React, and Tailwind. Follow @Next.js 14 App Router docs for Data Fetching, Rendering, and Routing. Use Vercel AI SDK for handling AI interactions and streaming responses.
+#### Project Scope and Objectives
 
-- All project files are saved in the /src folder. 
-  - src/app has the page.tsx and layout.tsx files
-  - src/app/api has the API routes
-  - src/app/components has all the React components
-  - src/app/lib has all the other code like helpers, hooks, and contexts
+The project aims to create a web application where users interact with an AI chatbot to manage their to-do lists through natural language commands. The interface splits into two sections: a chatbot on the left for user input and a to-do list on the right for display. The AI, powered by Groq's free API, interprets commands like "add going to gym as a task" and updates the list accordingly, responding in natural language while ensuring database updates. The app leverages free tools, aligning with the user's budget, and is deployed on Vercel with Firebase for authentication and data storage.
 
-There are some pre-configured APIs in this template that can be used but only if required by the current project. These have already been created:
-- Firebase
-  - In src/lib/firebase there is a firebase.ts configuration file as well as firebaseUtils.ts for various utility functions when interacting with Firebase Database, Storage, and Authencation
-  - In src/lib/contexts there is an AuthContext.tsx file that has user authentication with Firebase set up with the onAuthStateChanged listener.
-  - In src/lib/hooks there is a useAuth.ts hook
-- OpenAI 
-  - src/app/api/openai has chat/route.ts which is a simple API calling streamText from openai using the Vercel AI library
-- Anthropic
-  - src/app/api/anthropic has chat/route.ts which is a simple API calling streamText from Anthropic using the Vercel AI library
-- Replicate
-  - src/app/api/replicate has generate-image/route.ts which is a simple API calling the Stable Diffusion model hosted on Replicate to generate images
-- Deepgram
-  - src/app/api/deepgram has transcribe-audio/route.ts which is a simple API that returns the Deepgram API key to be used in the client side to transcribe audio in real-time.
-  - src/lib/contexts has a DeepgramContext.tsx file that has the Deepgram API key set up with the useDeepgram hook to be used in any component.
+#### Technical Stack and Rationale
+
+The chosen stack includes:
+
+| Component           | Tool/Service                   | Rationale                                                                                                                                               |
+| ------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Front-end Framework | Next.js with React, Typescript | Next.js offers server-side rendering and easy Vercel deployment; Typescript ensures type safety.                                                        |
+| UI Components       | Shadcn UI                      | Provides responsive, accessible components built on Radix UI and Tailwind CSS, free and customizable.                                                   |
+| AI API              | Groq's API                     | Free, fast inference, compatible with OpenAI's format, ideal for natural language processing ([Groq API Docs](https://console.groq.com/docs/overview)). |
+| Authentication      | Firebase Authentication        | Free tier supports user logins (email/password, Google, etc.), secure and scalable.                                                                     |
+| Database            | Firebase Firestore             | NoSQL database, free tier suitable for small projects, stores to-do lists per user.                                                                     |
+| Deployment          | Vercel                         | Free hosting, integrates seamlessly with Next.js, simplifies deployment process.                                                                        |
+
+This stack ensures a cost-effective, functional solution, leveraging free tiers and open-source tools.
+
+#### Detailed App Flow
+
+The app flow is designed for seamless user interaction and efficient backend processing:
+
+1. **User Authentication:**
+
+   - Users log in using Firebase Authentication, supporting methods like email/password or Google sign-in. The UID is stored client-side for data association.
+   - This ensures private, user-specific to-do lists, enhancing security and personalization.
+
+2. **Initial To-Do List Display:**
+
+   - Upon login, the front-end fetches the user's to-do list from Firestore via a server-side API route. The list is displayed on the right side, using Shadcn UI components for a clean, responsive layout.
+   - Each task shows its description and status (e.g., "Go to gym (pending)" or "Buy groceries (completed)").
+
+3. **Chatbot Interaction:**
+
+   - Users input commands via a chatbot interface on the left, designed with Shadcn UI (input field and conversation history display).
+   - When submitted, the message is sent to a Next.js API route. The server fetches the current to-do list from Firestore, formats it as text (e.g., "Current to-do list: Task 1: Go to gym (pending)"), and constructs a prompt for Groq's API.
+
+4. **AI Processing with Groq's API:**
+
+   - The prompt instructs the AI to interpret the user's message and perform actions (add, edit, delete, mark complete, etc.), responding in natural language and including a JSON action for server processing.
+   - Example prompt: "You are an AI assistant... Current to-do list: Task 1: Go to gym (pending). User's message: 'Add going to park.' Respond with: 'Alright, I've added 'going to park' to your to-do list. {\"action\": \"add_task\", \"task\": \"going to park\"}'."
+   - Groq's API, compatible with OpenAI's format, processes the prompt, returning a response like: "Alright, I've added 'going to park' to your to-do list. {\"action\": \"add_task\", \"task\": \"going to park\"}."
+
+5. **Server-Side Action and Database Update:**
+
+   - The server parses the AI's response, extracting the JSON action (e.g., `{"action": "add_task", "task": "going to park"}`). It updates Firestore accordingly:
+     - For "add_task," generate a new task ID (increment highest existing ID + 1), add to the `todo_list` array.
+     - For "edit_task," update the task description or status based on the task ID.
+     - For "delete_task," remove the task from the array, and so on.
+   - Error handling ensures robustness if the AI's JSON is malformed.
+
+6. **Front-End Update:**
+   - The server returns the AI's natural language response and the updated to-do list to the front-end. The chatbot displays the response, and the to-do list component refreshes to show changes, ensuring real-time updates without additional requests.
+
+#### Implementation Details
+
+**Front-End Development:**
+
+- Use Next.js pages (e.g., `/dashboard`) for the main app, with components for the chatbot and to-do list.
+- Shadcn UI components (e.g., input, list) ensure a professional, responsive design. For example, the to-do list can use a list component with each item showing description and status, styled with Tailwind CSS.
+- Typescript enhances type safety, reducing runtime errors.
+
+**Back-End Logic:**
+
+- Next.js API routes handle server-side logic:
+  - `/api/todo-list`: Fetch and return the user's to-do list from Firestore.
+  - `/api/chat`: Process user messages, call Groq's API, update Firestore, and return responses.
+- Firebase Admin SDK on the server interacts with Firestore for secure database operations, ensuring API keys are not exposed client-side.
+
+**AI Integration with Groq:**
+
+- Obtain a free API key from Groq ([Groq API Cookbook](https://github.com/groq/groq-api-cookbook)). Store it as an environment variable in Vercel for security.
+- Use HTTP requests to Groq's endpoint (e.g., `https://api.groq.com/openai/v1/chat/completions`) with the prompt, ensuring the AI consistently outputs both natural language and JSON action.
+- Few-shot prompting (e.g., examples in the prompt) ensures reliable formatting, such as:
+  - Example: "User message: 'Mark task 1 as completed.' Response: 'Got it, task 1 is now marked as completed. {\"action\": \"mark_completed\", \"task_id\": 1}'."
+
+**Database Structure:**
+
+- Firestore collection `users`, each document with:
+  - `uid`: User's unique ID.
+  - `todo_list`: Array of task objects, each with `id` (integer), `description` (string), and `status` (boolean, true for completed).
+- Example: `{ uid: "user123", todo_list: [{ id: 1, description: "Go to gym", status: false }] }`.
+
+**Deployment on Vercel:**
+
+- Configure the Next.js project for Vercel, ensuring Firebase and Groq API keys are set as environment variables. Vercel's build process supports Next.js out of the box, simplifying deployment.
+
+#### Considerations and Challenges
+
+- **Task ID Management:** Ensure unique, sequential IDs for tasks, incrementing the highest ID + 1 when adding new tasks.
+- **AI Response Parsing:** Handle cases where Groq's API might not format JSON correctly, with robust error handling on the server.
+- **Performance:** For long to-do lists, the prompt size might grow, but Groq's free tier and small expected list size should suffice.
+- **Security:** Keep API keys (Groq, Firebase) in environment variables, never exposing them client-side.
+- **Real-Time Updates:** The front-end refreshes the to-do list after each interaction, but for better UX, consider returning the updated list with the AI response to avoid additional requests.
+
+#### Unexpected Insights
+
+An interesting aspect is the dual-response mechanism: the AI must generate both a user-friendly natural language response and a machine-readable JSON action. This dual output ensures the chatbot feels conversational while enabling precise database updates, a design choice that balances usability and functionality.
+
+#### Conclusion
+
+By following this guide, you can build a fully functional, free AI-enhanced to-do list app. The integration of Groq's API for AI, Firebase for data, and Next.js with Shadcn for the front-end creates a robust, user-friendly solution, deployable on Vercel without costs. This approach leverages free tiers and open-source tools, aligning with your budget and technical preferences.
