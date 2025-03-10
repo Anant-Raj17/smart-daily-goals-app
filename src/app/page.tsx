@@ -429,7 +429,7 @@ export default function Home() {
       {user ? (
         <div className="flex flex-col h-screen">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-semibold">Smart Daily Tasks</h1>
+            <h1 className="text-xl font-semibold">Smart Tasks</h1>
             <Button onClick={signOut} variant="outline" size="sm">
               Sign Out
             </Button>
@@ -466,7 +466,7 @@ export default function Home() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center min-h-screen">
-          <h1 className="text-2xl font-semibold mb-8">Smart Daily Tasks</h1>
+          <h1 className="text-2xl font-semibold mb-8">Smart Tasks</h1>
           <div className="flex flex-col w-full max-w-sm p-6 border rounded-lg shadow-sm">
             <h2 className="text-xl font-medium mb-6 text-center">Sign In</h2>
             <Button onClick={signInWithGoogle} className="w-full">
