@@ -19,6 +19,7 @@ export interface Message {
   content: string;
   role: "user" | "assistant";
   timestamp: Date;
+  photoURL?: string;
 }
 
 interface ChatInterfaceProps {
@@ -64,15 +65,9 @@ export function ChatInterface({
               <div className="flex items-start gap-3">
                 <Avatar
                   className={
-                    message.role === "assistant"
-                      ? "bg-neutral-500"
-                      : "bg-blue-500"
+                    message.role === "assistant" ? "bg-black" : "bg-blue-500"
                   }
-                >
-                  <span className="text-xs">
-                    {message.role === "assistant" ? "AI" : "You"}
-                  </span>
-                </Avatar>
+                />
                 <div className="flex-1">
                   <div className="text-sm whitespace-pre-wrap">
                     {message.content}
@@ -87,9 +82,7 @@ export function ChatInterface({
           ))}
           {isLoading && (
             <div className="flex items-start gap-3 animate-pulse">
-              <Avatar className="bg-neutral-500">
-                <span className="text-xs">AI</span>
-              </Avatar>
+              <Avatar className="bg-black" />
               <div className="flex-1">
                 <div className="h-4 bg-neutral-200 rounded w-3/4 mb-2"></div>
                 <div className="h-4 bg-neutral-200 rounded w-1/2"></div>

@@ -37,6 +37,7 @@ INSTRUCTIONS FOR FORMATTING YOUR RESPONSE:
 
 The JSON MUST follow this exact format:
 - Adding a task: {"type":"add_task","task":"Buy groceries"}
+- Adding multiple tasks: {"type":"add_multiple_tasks","tasks":["Buy groceries", "Go to gym", "Call mom"]}
 - Marking complete: {"type":"mark_completed","taskId":"123"}
 - Marking pending: {"type":"mark_pending","taskId":"123"}
 - Editing a task: {"type":"edit_task","taskId":"123","task":"New description"}
@@ -44,6 +45,7 @@ The JSON MUST follow this exact format:
 - No action needed: {"type":"none"}
 
 CRITICAL RULES:
+- When the user asks to add multiple tasks in a single request, use the add_multiple_tasks action
 - The JSON MUST be the last thing in your response
 - Do NOT wrap the JSON in any code block formatting or explanatory text
 - Do NOT include the word "action" in your JSON object

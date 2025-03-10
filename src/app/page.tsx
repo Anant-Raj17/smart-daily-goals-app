@@ -23,6 +23,7 @@ interface AIResponse {
   action?: {
     type:
       | "add_task"
+      | "add_multiple_tasks"
       | "edit_task"
       | "delete_task"
       | "mark_completed"
@@ -30,6 +31,7 @@ interface AIResponse {
       | "none";
     taskId?: string;
     task?: string;
+    tasks?: string[];
   };
 }
 
@@ -196,6 +198,36 @@ export default function Home() {
             console.log("Task added successfully:", newTodo);
           } catch (error) {
             console.error("Error adding task:", error);
+          }
+        }
+        break;
+
+      case "add_multiple_tasks":
+        if (
+          action.tasks &&
+          Array.isArray(action.tasks) &&
+          action.tasks.length > 0
+        ) {
+          console.log("Adding multiple tasks:", action.tasks);
+
+          try {
+            const newTodos: Todo[] = [];
+
+            // Add each task sequentially
+            for (const task of action.tasks) {
+              if (typeof task === "string" && task.trim()) {
+                const newTodo = await addTodo(user.uid, task);
+                newTodos.push(newTodo);
+                console.log(`Task added successfully: ${newTodo.description}`);
+              }
+            }
+
+            // Update state once with all new todos
+            if (newTodos.length > 0) {
+              setTodos((prev) => [...prev, ...newTodos]);
+            }
+          } catch (error) {
+            console.error("Error adding multiple tasks:", error);
           }
         }
         break;

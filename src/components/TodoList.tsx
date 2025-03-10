@@ -103,7 +103,7 @@ export function TodoList({
           {pendingTodos.length === 0 && completedTodos.length === 0 ? (
             <div className="flex items-center justify-center h-full text-center p-4">
               <div className="text-muted-foreground">
-                <p>You don't have any todos yet.</p>
+                <p>You don&apos;t have any todos yet.</p>
                 <p className="text-sm">
                   Add a task using the form above or chat with the AI assistant!
                 </p>
