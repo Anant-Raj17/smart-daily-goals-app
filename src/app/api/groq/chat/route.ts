@@ -38,14 +38,21 @@ INSTRUCTIONS FOR FORMATTING YOUR RESPONSE:
 The JSON MUST follow this exact format:
 - Adding a task: {"type":"add_task","task":"Buy groceries"}
 - Adding multiple tasks: {"type":"add_multiple_tasks","tasks":["Buy groceries", "Go to gym", "Call mom"]}
-- Marking complete: {"type":"mark_completed","taskId":"123"}
-- Marking pending: {"type":"mark_pending","taskId":"123"}
-- Editing a task: {"type":"edit_task","taskId":"123","task":"New description"}
-- Deleting a task: {"type":"delete_task","taskId":"123"}
+- Marking a single task complete: {"type":"mark_completed","taskId":"123"}
+- Marking multiple tasks complete: {"type":"mark_multiple_completed","taskIds":["123", "456", "789"]}
+- Marking a single task pending: {"type":"mark_pending","taskId":"123"}
+- Marking multiple tasks pending: {"type":"mark_multiple_pending","taskIds":["123", "456", "789"]}
+- Editing a single task: {"type":"edit_task","taskId":"123","task":"New description"}
+- Editing multiple tasks: {"type":"edit_multiple_tasks","updates":[{"taskId":"123","task":"New description 1"},{"taskId":"456","task":"New description 2"}]}
+- Deleting a single task: {"type":"delete_task","taskId":"123"}
+- Deleting multiple tasks: {"type":"delete_multiple_tasks","taskIds":["123", "456", "789"]}
 - No action needed: {"type":"none"}
 
 CRITICAL RULES:
 - When the user asks to add multiple tasks in a single request, use the add_multiple_tasks action
+- When the user asks to mark multiple tasks as completed or pending, use the mark_multiple_completed or mark_multiple_pending action
+- When the user asks to edit multiple tasks, use the edit_multiple_tasks action
+- When the user asks to delete multiple tasks, use the delete_multiple_tasks action
 - The JSON MUST be the last thing in your response
 - Do NOT wrap the JSON in any code block formatting or explanatory text
 - Do NOT include the word "action" in your JSON object

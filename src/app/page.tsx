@@ -25,13 +25,19 @@ interface AIResponse {
       | "add_task"
       | "add_multiple_tasks"
       | "edit_task"
+      | "edit_multiple_tasks"
       | "delete_task"
+      | "delete_multiple_tasks"
       | "mark_completed"
+      | "mark_multiple_completed"
       | "mark_pending"
+      | "mark_multiple_pending"
       | "none";
     taskId?: string;
+    taskIds?: string[];
     task?: string;
     tasks?: string[];
+    updates?: Array<{ taskId: string; task: string }>;
   };
 }
 
@@ -257,6 +263,41 @@ export default function Home() {
         }
         break;
 
+      case "mark_multiple_completed":
+      case "mark_multiple_pending":
+        if (
+          action.taskIds &&
+          Array.isArray(action.taskIds) &&
+          action.taskIds.length > 0
+        ) {
+          const isCompleted = actionType === "mark_multiple_completed";
+          console.log(
+            `Marking multiple tasks (${action.taskIds.join(", ")}) as ${
+              isCompleted ? "completed" : "pending"
+            }`
+          );
+
+          try {
+            // Process each task sequentially
+            for (const taskId of action.taskIds) {
+              await updateTodoStatus(user.uid, taskId, isCompleted);
+            }
+
+            // Update state once with all updates
+            setTodos((prev) =>
+              prev.map((todo) =>
+                action.taskIds?.includes(todo.id)
+                  ? { ...todo, completed: isCompleted }
+                  : todo
+              )
+            );
+            console.log("Multiple task statuses updated successfully");
+          } catch (error) {
+            console.error("Error updating multiple task statuses:", error);
+          }
+        }
+        break;
+
       case "edit_task":
         if (action.taskId && action.task) {
           console.log(`Editing task ${action.taskId} to: ${action.task}`);
@@ -276,6 +317,41 @@ export default function Home() {
         }
         break;
 
+      case "edit_multiple_tasks":
+        if (
+          action.updates &&
+          Array.isArray(action.updates) &&
+          action.updates.length > 0
+        ) {
+          console.log("Editing multiple tasks:", action.updates);
+
+          try {
+            // Process each task update sequentially
+            for (const update of action.updates) {
+              if (update.taskId && update.task) {
+                await updateTodoText(user.uid, update.taskId, update.task);
+                console.log(
+                  `Task ${update.taskId} edited successfully to: ${update.task}`
+                );
+              }
+            }
+
+            // Update state once with all updates
+            setTodos((prev) =>
+              prev.map((todo) => {
+                const update = action.updates?.find(
+                  (u: { taskId: string; task: string }) => u.taskId === todo.id
+                );
+                return update ? { ...todo, description: update.task } : todo;
+              })
+            );
+            console.log("Multiple tasks edited successfully");
+          } catch (error) {
+            console.error("Error editing multiple tasks:", error);
+          }
+        }
+        break;
+
       case "delete_task":
         if (action.taskId) {
           console.log(`Deleting task ${action.taskId}`);
@@ -287,6 +363,31 @@ export default function Home() {
             console.log("Task deleted successfully");
           } catch (error) {
             console.error("Error deleting task:", error);
+          }
+        }
+        break;
+
+      case "delete_multiple_tasks":
+        if (
+          action.taskIds &&
+          Array.isArray(action.taskIds) &&
+          action.taskIds.length > 0
+        ) {
+          console.log(`Deleting multiple tasks: ${action.taskIds.join(", ")}`);
+
+          try {
+            // Process each task deletion sequentially
+            for (const taskId of action.taskIds) {
+              await deleteTodo(user.uid, taskId);
+            }
+
+            // Update state once with all deletions
+            setTodos((prev) =>
+              prev.filter((todo) => !action.taskIds?.includes(todo.id))
+            );
+            console.log("Multiple tasks deleted successfully");
+          } catch (error) {
+            console.error("Error deleting multiple tasks:", error);
           }
         }
         break;
